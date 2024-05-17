@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"esp_lcd_touch.h": "c",
+			"lv_api_map_v9_0.h": "c",
+			"lv_sprintf.h": "c",
+			"atomic": "cpp",
+			"condition_variable": "cpp"
+		}
+	}
+}
