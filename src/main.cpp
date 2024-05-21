@@ -114,6 +114,7 @@ void loadPrefs() {
 // ****************** UI SETTINGS (COLORS, STATIONS, ..) *******************************************
 
 String loadJSON() {
+  LV_LOG_USER("LOAD JSON");
   File file = LittleFS.open("/Settings.json", "r");
   if (file){
     String ret = file.readString();
@@ -125,14 +126,16 @@ String loadJSON() {
       return ret;
     }
   }
+   LV_LOG_USER("DEFAULT JSON");
    return defaultJson; //IF NOT FOUND
 }
 
 String loadSettings()     //ONLY FOR WEBSERVER-CONFIG
 {
+  LV_LOG_USER("LOAD SETTINGS");
   File file = LittleFS.open("/Settings.json", "r");
   String payload = "";
-  LV_LOG_USER("LOAD SETTINGS");
+
   if (file){
      LV_LOG_USER("FILE FOUND");
     payload = file.readString();
@@ -165,11 +168,9 @@ bool saveSettings(String payload) {
 
     if(_lastStation > _num_stations -1) { _lastStation = _num_stations -1;}
 
-
-
   //SAVE IT
   bool ret = false;
-  File file = LittleFS.open("/Settings.json", "w");
+  File file = LittleFS.open("/Settings.json", "w",true);
   if (file) { 
       size_t bytesWritten = file.write((const uint8_t*)payload.c_str(), (size_t)payload.length());
       if(bytesWritten == payload.length()) {
