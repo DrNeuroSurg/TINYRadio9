@@ -1,6 +1,8 @@
 # THIS IS ONLY FOR WT32-SC01-PLUS 
 # (NOT WT32-SC01)
 
+![Screenshot]
+(/images/screen.jpg)
 ## "release" contains the firmware.
 
 ### --chip esp32s3
