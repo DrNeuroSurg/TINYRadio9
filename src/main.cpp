@@ -36,21 +36,16 @@ bool _drdStopped = false;
 
 SemaphoreHandle_t lvgl_mux;
 
-//IF NO GUI SELECTED
-#ifndef USE_GUI_RETRO || USE_GUI_SIMPLE
-  #define USE_GUI_SIMPLE
-#endif
 
 //GUI
-#ifdef USE_GUI_RETRO
+
   #include "RetroGUI.h"
   RetroGUI GUI;
-#endif
 
-#ifdef USE_GUI_SIMPLE
-  #include "SimpleGUI.h"
-  SimpleGUI GUI;
-#endif
+
+  // #include "SimpleGUI.h"
+  // SimpleGUI GUI;
+
 
 //STATIONS
 #include "Stations.h"
@@ -58,7 +53,7 @@ static Stations tinyStations;
 TinyStations stations(tinyStations);
 
 //AUDIO
-#include "Audio.h"     // see my repository at github "ESP32-audioI2S"
+#include "Audio.h"     //wolle aka schreibfaul1
 #include "audiotask.h"
 
 
@@ -77,6 +72,8 @@ const char defaultJson[] PROGMEM = R"=====(
 "colorTuning":"#e32400",
 "colorVolume":"#6aff12",
 "stations":[
+{"shortName":"RADIO.EINS",
+"StreamURL":"http://www.radioeins.de/livemp3"},
 {"shortName":"COSTA.D.MAR",
 "StreamURL":"http://radio4.cdm-radio.com:8020/stream-mp3-Chill_autodj"},
 {"shortName":"Kiss.FM",

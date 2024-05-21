@@ -462,6 +462,7 @@ const char index_PayLoad[] PROGMEM = R"=====(
             colorTuning: "#e32400",
             colorVolume: "#6aff12",
             stations: [
+                {shortName: "RADIO.EINS", StreamURL: "http://www.radioeins.de/livemp3"},
                 {shortName: "COSTA.D.MAR", StreamURL: "http://radio4.cdm-radio.com:8020/stream-mp3-Chill_autodj"},
                 {shortName: "Kiss.FM", StreamURL: "http://topradio-stream31.radiohost.de/kissfm_mp3-128"},
                 {shortName: "sun radio", StreamURL: "http://radio2.vip-radios.fm:8068/stream-128kmp3-CafeSoulside_autodj"}
