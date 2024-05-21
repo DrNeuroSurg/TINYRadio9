@@ -579,8 +579,6 @@ class RetroGUI: public GuiClass {
 
         uint32_t numStations = _stations.size(); //getNumStations();
 
-        Serial.printf("NUM_STATION %i \n", numStations);
-
         if(numStations > MAX_STATIONS ) {numStations = MAX_STATIONS; }
 
         //CALCULATE DISTRIBUTION

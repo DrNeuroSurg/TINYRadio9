@@ -63,9 +63,9 @@ class GuiClass {
             DeserializationError error = deserializeJson(doc, json.c_str());
 
             if (error) {
-                Serial.print("deserializeJson() failed: ");
-                Serial.println(error.c_str());
-                Serial.println(json);
+                LV_LOG_USER("deserializeJson() failed: ");
+                LV_LOG_USER(error.c_str());
+                LV_LOG_USER(json.c_str());
                 return;
             }
 

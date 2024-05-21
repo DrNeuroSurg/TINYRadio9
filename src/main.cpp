@@ -216,7 +216,7 @@ void gotSettings(AsyncWebServerRequest *request) {
 
 void onRoot(AsyncWebServerRequest *request) {
 
-	  Serial.println("Web Server: New request received: => /");  // for debugging 
+	  LV_LOG_USER("Web Server: New request received: => /");  // for debugging 
 
     String html = index_partOne ;
     html += loadSettings();
