@@ -1,4 +1,5 @@
-# THIS IS ONLY FOR WT32-SC01-PLUS (NOT WT32-SC01)
+# THIS IS ONLY FOR WT32-SC01-PLUS 
+# (NOT WT32-SC01)
 
 ## "release" contains the firmware.
 
