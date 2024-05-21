@@ -18,9 +18,6 @@
 #endif
 
 
-
-//ESP_WM_LITE_Configuration defaultConfig;
-
 /* Comment this out to disable prints and save space */
 #define ESP_WM_LITE_DEBUG_OUTPUT      Serial
 

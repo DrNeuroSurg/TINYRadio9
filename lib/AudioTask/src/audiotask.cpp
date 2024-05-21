@@ -195,10 +195,6 @@ void audioInit() {
         &Task1,                 /* Task handle. */
         AUDIOTASK_CORE          /* Core where the task should run */
     );
-    if(DEBUG_LEVEL >= 2){
-        {Serial.printf("audiotask:   is pinned to core %d \n", AUDIOTASK_CORE);}
-        {Serial.printf("audiotask:   priority is %d \n", AUDIOTASK_PRIO);}
-    }
 }
 
 void audioTaskDelete(){

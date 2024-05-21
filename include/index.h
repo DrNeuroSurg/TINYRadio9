@@ -324,7 +324,17 @@ const char index_partOne[] PROGMEM = R"=====(
     <p>
           <input type="button" value="SPEICHERN & UPDATE" onclick="javascript:postIt('/save', editor.getValue());"/>
     </p>
+
+    <div>
+            <p>Radiostationen sind u.a. hier zu finden: </p>
+            <p><a target="_blank" href="https://radiolise.gitlab.io"> Radiolise</a></p>
+            <p>oder</p>
+            <p><a target="_blank" href="http://streamstat.net/main.cgi?mode=all"> StreamStat.NET </a></p>
+
    </div>
+   
+
+
    
    <script>
         

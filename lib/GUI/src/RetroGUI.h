@@ -37,8 +37,8 @@ class RetroGUI: public GuiClass {
     decodeJSON(json);
     createStyles();
 
-    lv_obj_set_style_bg_color(_parent, lv_color_hex(_colorBackground), 0);
-    lv_obj_set_style_bg_opa(_parent, LV_OPA_COVER, 0);
+    // lv_obj_set_style_bg_color(_parent, lv_color_hex(_colorBackground), 0);
+    // lv_obj_set_style_bg_opa(_parent, LV_OPA_COVER, 0);
 
         //GRID
     static int32_t col_dsc[] = {54, LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
@@ -282,7 +282,7 @@ class RetroGUI: public GuiClass {
         lv_style_set_border_color(&cont_style, lv_color_hex(0x0));
         lv_style_set_border_width(&cont_style,0);
         lv_style_set_bg_color(&cont_style, lv_color_hex(_colorBackground));
-        lv_style_set_bg_opa(&cont_style, LV_OPA_TRANSP);
+        lv_style_set_bg_opa(&cont_style, LV_OPA_COVER);
         lv_style_set_pad_all(&cont_style, 2);
         lv_style_set_pad_gap(&cont_style, 3);
 
@@ -310,6 +310,11 @@ class RetroGUI: public GuiClass {
         lv_style_set_border_width(&tuning_style, 0);
         lv_style_set_pad_all(&tuning_style, 3);
         lv_style_set_pad_gap(&tuning_style, 0);
+        //SHADOW
+        lv_style_set_shadow_color(&tuning_style,lv_color_black());
+        lv_style_set_shadow_opa(&tuning_style, 64);
+        lv_style_set_shadow_ofs_x(&tuning_style, POINTER_WIDTH / 3);
+        lv_style_set_shadow_width(&tuning_style, POINTER_WIDTH / 3);
 
         //VOLUME
         lv_style_init(&volume_style);
@@ -338,8 +343,8 @@ class RetroGUI: public GuiClass {
         // //SHADOW
         lv_style_set_shadow_color(&volume_style,lv_color_black());
         lv_style_set_shadow_opa(&volume_style, 64);
-        lv_style_set_shadow_ofs_x(&volume_style, POINTER_WIDTH / 2);
-        lv_style_set_shadow_width(&volume_style, POINTER_WIDTH / 2);
+        lv_style_set_shadow_ofs_x(&volume_style, POINTER_WIDTH / 3);
+        lv_style_set_shadow_width(&volume_style, POINTER_WIDTH / 3);
 
 
         //MAIN PARTS
