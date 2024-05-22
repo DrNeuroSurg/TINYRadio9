@@ -61,15 +61,54 @@ class SimpleGUI: public GuiClass {
         lv_obj_align(_volumeBar, LV_ALIGN_CENTER, 0, 50);   //CENTER ON PARENT 
         lv_bar_set_value(_volumeBar, _volumePercent, LV_ANIM_OFF);
         
+        //TEST W. STYLE
+         uint32_t _buttonColor = 0xDEA163;
+
+
+        lv_style_init(&button_style);
+        lv_color_t color1b  = lv_color_hex(_buttonColor);
+        lv_color_t color2b = lv_color_darken(color1b, 64);
+        lv_style_set_radius(&button_style, 4);
+        lv_style_set_bg_opa(&button_style, LV_OPA_COVER);
+        
+        static lv_grad_dsc_t grad_b;
+        grad_b.dir = LV_GRAD_DIR_VER;
+
+        grad_b.stops_count = 3;
+
+        grad_b.stops[0].color = color2b;
+        grad_b.stops[0].opa = LV_OPA_COVER;
+        grad_b.stops[0].frac = 0;
+
+        grad_b.stops[1].color =color1b;
+        grad_b.stops[1].opa = LV_OPA_COVER;
+        grad_b.stops[1].frac = 100;
+
+        grad_b.stops[2].color = color2b;
+        grad_b.stops[2].opa = LV_OPA_COVER;
+        grad_b.stops[2].frac = 255;
+
+        lv_style_set_bg_grad(&button_style, &grad_b);
+        lv_style_set_border_color(&button_style, lv_color_black());
+        lv_style_set_border_width(&button_style, 0);
+
+        lv_style_set_pad_all(&button_style, 1);
+        lv_style_set_pad_gap(&button_style, 1);
 
         // BUTTON MATRIX
         static const char * btnm_map[] = {LV_SYMBOL_VOLUME_MID, LV_SYMBOL_PREV, LV_SYMBOL_NEXT, LV_SYMBOL_VOLUME_MAX ,""}; // 4 BUTTONS
+
         _buttonMatrix = lv_buttonmatrix_create(_parent);
+        lv_obj_remove_style_all(_buttonMatrix);
         lv_obj_set_style_border_width(_buttonMatrix, 0, 0);
         lv_obj_set_style_bg_color(_buttonMatrix, lv_color_hex(_colorBackground), 0);
         lv_obj_set_style_bg_opa(_buttonMatrix, LV_OPA_COVER,0); 
+        lv_obj_add_style(_buttonMatrix, &button_style, LV_PART_ITEMS);
+        
+        lv_obj_set_style_pad_column(_buttonMatrix, 2, LV_PART_MAIN);
+        
         lv_buttonmatrix_set_map(_buttonMatrix, btnm_map);
-        lv_obj_set_size(_buttonMatrix, lv_pct(100), lv_pct(30)); //100% WIDTH OF PARENT, 30% HEIGHT OF PARENT
+        lv_obj_set_size(_buttonMatrix, lv_pct(100), lv_pct(20)); //100% WIDTH OF PARENT, 30% HEIGHT OF PARENT
         lv_obj_align(_buttonMatrix, LV_ALIGN_BOTTOM_MID, 0, 0); // BOTTOM ON PARENT
         lv_obj_clear_flag(_buttonMatrix, LV_OBJ_FLAG_SCROLLABLE); //DON'T USE SCROLLBARS
         lv_obj_add_event_cb(_buttonMatrix, _event_handler_buttonmatrix, LV_EVENT_ALL, NULL); // ADD EVENT_HANDLER
@@ -118,6 +157,7 @@ class SimpleGUI: public GuiClass {
     lv_obj_t * _stationLabel;
     lv_obj_t * _volumeBar;
     lv_obj_t * _buttonMatrix;
+    lv_style_t button_style;
     uint8_t _maxVolume;
     uint8_t _volumePercent; //FOR BAR
     uint8_t _volume;

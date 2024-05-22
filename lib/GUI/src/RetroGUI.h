@@ -212,7 +212,7 @@ class RetroGUI: public GuiClass {
 
         /*Set path (curve). Default is linear*/
         lv_anim_set_path_cb(&a, lv_anim_path_ease_in_out);
-        
+
         //set Callback
         lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t) lv_obj_set_x);
 
@@ -425,7 +425,7 @@ class RetroGUI: public GuiClass {
 
 
    //BUTTON
-     uint32_t _buttonColor = 0xDEA163;
+        uint32_t _buttonColor = 0xDEA163;
         lv_style_init(&button_style);
         lv_color_t color1b  = lv_color_hex(_buttonColor);
         lv_color_t color2b = lv_color_darken(color1b, 64);
@@ -502,16 +502,23 @@ class RetroGUI: public GuiClass {
 
     lv_obj_t * createButtons(lv_obj_t * parent){
         lv_obj_update_layout(parent);
+        
         lv_obj_t *  btn_matrix = lv_buttonmatrix_create(parent);
         
         lv_obj_remove_style_all(btn_matrix);
-        lv_buttonmatrix_set_map(btn_matrix, btnm_map);
-        lv_obj_set_size(btn_matrix, lv_pct(100), lv_pct(100));
+        lv_obj_set_style_border_width(btn_matrix, 0, 0);
+        lv_obj_set_style_bg_color(btn_matrix, lv_color_hex(_colorBackground), 0);
+        lv_obj_set_style_bg_opa(btn_matrix, LV_OPA_COVER,0); 
         lv_obj_add_style(btn_matrix, &button_style, LV_PART_ITEMS);
+        
         lv_obj_set_style_pad_column(btn_matrix, 2, LV_PART_MAIN);
-        lv_obj_set_style_text_font(btn_matrix, &lv_font_montserrat_20, LV_PART_ITEMS);
-        lv_obj_align(btn_matrix, LV_ALIGN_CENTER, 0, 0);
-        lv_obj_add_event_cb(btn_matrix, _event_handler_buttonmatrix, LV_EVENT_ALL, NULL);
+        
+        lv_buttonmatrix_set_map(btn_matrix, btnm_map);
+        lv_obj_set_size(btn_matrix, lv_pct(100), lv_pct(100)); //100% WIDTH OF PARENT, 100% HEIGHT OF PARENT
+        lv_obj_align(btn_matrix, LV_ALIGN_BOTTOM_MID, 0, 0); // BOTTOM ON PARENT
+        lv_obj_clear_flag(btn_matrix, LV_OBJ_FLAG_SCROLLABLE); //DON'T USE SCROLLBARS
+        lv_obj_add_event_cb(btn_matrix, _event_handler_buttonmatrix, LV_EVENT_ALL, NULL); // ADD EVENT_HANDLER
+
         return btn_matrix;
     }
 
