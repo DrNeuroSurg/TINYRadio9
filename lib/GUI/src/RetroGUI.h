@@ -40,6 +40,7 @@ class RetroGUI: public GuiClass {
         //GRID
     static int32_t col_dsc[] = {54, LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
     static int32_t row_dsc[] = {54, 190, 20, LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
+
     static lv_point_precise_t top_line_points[] = { {0,0}, {TFT_HOR_RES, 0}};
     static lv_point_precise_t bottom_line_points[] = { {0,TFT_VER_RES -1}, {TFT_HOR_RES, TFT_VER_RES - 1}};
 
@@ -91,6 +92,8 @@ class RetroGUI: public GuiClass {
     //ONLY TOP BORDER
     lv_obj_set_style_border_side(mid, LV_BORDER_SIDE_TOP, 0);
 
+    //STATION-LIST
+    createStationList(mid);
 
     // BOTTOM
     bot_upper = createPart(cont,  true);
@@ -102,14 +105,14 @@ class RetroGUI: public GuiClass {
     scale_bot = createVolumeScale(bot_upper, &Berlin10_4, 0, VOLUME_STEPS); 
 
 
+
+
+
+#ifdef USE_ENCODER
+
     bot_lower = createPart(cont,  false);
     lv_obj_set_grid_cell(bot_lower, LV_GRID_ALIGN_STRETCH, 0, 2,
                             LV_GRID_ALIGN_STRETCH, 3, 1);
-
-    //STATION-LIST
-    createStationList(mid);
-
-#ifdef USE_ENCODER
     //BOTTOM_LINE
     lv_obj_t * bottomLine = lv_line_create(_parent);
     lv_line_set_points(bottomLine, bottom_line_points, 2);
@@ -120,7 +123,9 @@ class RetroGUI: public GuiClass {
 
 #else
     //BUTTONS
-    buttons = createButtons(bot_lower);
+    buttons = createButtons(_parent);
+    lv_obj_set_size(buttons, lv_pct(100), lv_pct(14)); //100% WIDTH OF PARENT, 100% HEIGHT OF PARENT
+
 #endif
 
     //ZEIGER
@@ -135,6 +140,10 @@ class RetroGUI: public GuiClass {
     lv_label_set_text(station_playing, _station.c_str());
     lv_label_set_long_mode(title_playing, LV_LABEL_LONG_SCROLL_CIRCULAR);  
     lv_label_set_text(title_playing, _title.c_str());
+
+    //TEST 
+    // btn_tuneNext = createSingleButton(_parent, LV_SYMBOL_NEXT );  //WORKS
+    // lv_obj_set_size(btn_tuneNext, 116, 40);
 
   }
 
@@ -275,6 +284,12 @@ class RetroGUI: public GuiClass {
     lv_obj_t * title_playing;
     lv_obj_t * buttons;
     lv_obj_t * volume_scale;
+
+    lv_obj_t * btn_volUp;
+    lv_obj_t * btn_volDown;
+    lv_obj_t * btn_tuneNext;
+    lv_obj_t * btn_tunePrev;
+
 
     //VU-METER
     lv_obj_t * em11;
@@ -500,6 +515,19 @@ class RetroGUI: public GuiClass {
         return ret;
     }
 
+    lv_obj_t * createSingleButton(lv_obj_t * parent, const char * caption) {
+
+            lv_obj_t * btn = lv_button_create(parent);
+            lv_obj_remove_style_all(btn);
+            lv_obj_add_style(btn, &button_style, 0);
+
+            lv_obj_t * label = lv_label_create(btn);
+            lv_label_set_text(label, caption);
+            lv_obj_center(label);   
+
+            return btn;
+    }
+
     lv_obj_t * createButtons(lv_obj_t * parent){
         lv_obj_update_layout(parent);
         
@@ -514,7 +542,7 @@ class RetroGUI: public GuiClass {
         lv_obj_set_style_pad_column(btn_matrix, 2, LV_PART_MAIN);
         
         lv_buttonmatrix_set_map(btn_matrix, btnm_map);
-        lv_obj_set_size(btn_matrix, lv_pct(100), lv_pct(100)); //100% WIDTH OF PARENT, 100% HEIGHT OF PARENT
+      
         lv_obj_align(btn_matrix, LV_ALIGN_BOTTOM_MID, 0, 0); // BOTTOM ON PARENT
         lv_obj_clear_flag(btn_matrix, LV_OBJ_FLAG_SCROLLABLE); //DON'T USE SCROLLBARS
         lv_obj_add_event_cb(btn_matrix, _event_handler_buttonmatrix, LV_EVENT_ALL, NULL); // ADD EVENT_HANDLER
