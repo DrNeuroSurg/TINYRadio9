@@ -2,12 +2,23 @@
 #define _TINY_DEFS_H_
 
 
-//GUI SELECTION
-//*** IMPORTANT : ONLY ONE GUI ALLOWED
 
-//UNCOMMENT WHAT YOU WOULD HAVE
-#define USE_GUI_RETRO
-//#define USE_GUI_SIMPLE
+
+//#define USE_ENCODER
+
+
+#ifdef USE_ENCODER
+//PINS
+  #define ENC_VOUME_BUTTON_PIN    10
+  #define ENC_VOLUME_A_PIN        11
+  #define ENC_VOLUME_B_PIN        12
+
+
+  #define ENC_TUNE_BUTTON_PIN     13
+  #define ENC_TUNE_A_PIN          14
+  #define ENC_TUNE_B_PIN          21
+
+#endif
 
 #include <lvgl.h>
 
@@ -42,6 +53,7 @@
   #define MARKER_HEIGHT 6
   #define MARKER_WIDTH X_INC
 
+  #define INDICATOR_MOVE_TIME 2000 // 2 sec. (2000 mS) from left to right
 
   //BUTTONMATRIX SYMBOLS
   static const char * btnm_map[] = {LV_SYMBOL_VOLUME_MID, LV_SYMBOL_PREV, LV_SYMBOL_NEXT, LV_SYMBOL_VOLUME_MAX ,""};

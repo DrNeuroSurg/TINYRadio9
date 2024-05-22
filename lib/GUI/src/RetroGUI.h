@@ -37,13 +37,11 @@ class RetroGUI: public GuiClass {
     decodeJSON(json);
     createStyles();
 
-    // lv_obj_set_style_bg_color(_parent, lv_color_hex(_colorBackground), 0);
-    // lv_obj_set_style_bg_opa(_parent, LV_OPA_COVER, 0);
-
         //GRID
     static int32_t col_dsc[] = {54, LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
     static int32_t row_dsc[] = {54, 190, 20, LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
     static lv_point_precise_t top_line_points[] = { {0,0}, {TFT_HOR_RES, 0}};
+    static lv_point_precise_t bottom_line_points[] = { {0,TFT_VER_RES -1}, {TFT_HOR_RES, TFT_VER_RES - 1}};
 
     //****************************************************************************************
     //                                   CREATE PARTS OF GUI                                 *
@@ -111,8 +109,19 @@ class RetroGUI: public GuiClass {
     //STATION-LIST
     createStationList(mid);
 
+#ifdef USE_ENCODER
+    //BOTTOM_LINE
+    lv_obj_t * bottomLine = lv_line_create(_parent);
+    lv_line_set_points(bottomLine, bottom_line_points, 2);
+    lv_obj_set_style_line_width(bottomLine, BORDER_WIDTH, 0);
+    lv_obj_set_style_line_color(bottomLine, lv_color_hex(_colorStation), 0);
+    lv_obj_set_style_line_opa(bottomLine, LV_OPA_COVER, 0);
+
+
+#else
     //BUTTONS
     buttons = createButtons(bot_lower);
+#endif
 
     //ZEIGER
     station_indicator = createStationIndicator(mid);
@@ -178,10 +187,38 @@ class RetroGUI: public GuiClass {
         }
     }
 
+    //ANIMATION CALLBACK
+    static void anim_x_cb(void * var, int32_t v)
+    {
+        lv_obj_set_x((lv_obj_t *) var, v);
+    }
+
     void tuneToStation(uint8_t station_id) {
         uint32_t pw2 = POINTER_WIDTH / 2;
         uint32_t nextStationMid = _stations[station_id].midX - pw2;
-        lv_obj_set_x(station_indicator, nextStationMid);
+
+        float _pixel_time =   INDICATOR_MOVE_TIME / TFT_HOR_RES ; // PIXEL / mSec
+        uint32_t _move_distance = abs ((int32_t) (nextStationMid - _lastStationMid) );
+        uint32_t _move_time =  _pixel_time * _move_distance; //_pixel_time * distance
+        
+       
+        //ANIMATION
+        lv_anim_t a;
+        lv_anim_init(&a);
+
+        lv_anim_set_var(&a, station_indicator);
+        lv_anim_set_duration(&a, _move_time);
+        lv_anim_set_values(&a, _lastStationMid, nextStationMid);
+
+        /*Set path (curve). Default is linear*/
+        lv_anim_set_path_cb(&a, lv_anim_path_ease_in_out);
+        
+        //set Callback
+        lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t) lv_obj_set_x);
+
+        lv_anim_start(&a);
+
+        _lastStationMid = nextStationMid;
 
     }
 
@@ -214,6 +251,7 @@ class RetroGUI: public GuiClass {
     uint8_t _maxVolume;
     uint8_t _volumePercent; //FOR BAR
     uint8_t _volume;
+    uint32_t _lastStationMid = 0;
 
     String _title = "";
     String _station = "";
@@ -237,7 +275,8 @@ class RetroGUI: public GuiClass {
     lv_obj_t * title_playing;
     lv_obj_t * buttons;
     lv_obj_t * volume_scale;
-    //VUI-METER
+
+    //VU-METER
     lv_obj_t * em11;
 
     //STYLES
@@ -250,6 +289,7 @@ class RetroGUI: public GuiClass {
     lv_style_t button_style;
     lv_style_t scale_style;
     lv_style_t vuMeter_style;
+
 
     String dummies[20] = {
       "NÜRNBERG",
@@ -357,6 +397,8 @@ class RetroGUI: public GuiClass {
         lv_style_set_border_opa(&part_style, LV_OPA_COVER);
         lv_style_set_radius(&part_style, RADIUS);
 
+
+
         //NOW PLAYING
         lv_style_init(&playing_style);
         lv_style_set_radius(&playing_style, 8);
@@ -379,6 +421,8 @@ class RetroGUI: public GuiClass {
         lv_style_set_text_color(&playing_style_inv, lv_color_hex(0x00));
         lv_style_set_align(&playing_style_inv, LV_ALIGN_BOTTOM_MID);
         lv_style_set_text_align(&playing_style_inv, LV_TEXT_ALIGN_CENTER);
+
+
 
    //BUTTON
      uint32_t _buttonColor = 0xDEA163;
@@ -570,7 +614,7 @@ class RetroGUI: public GuiClass {
         return ret;
     }
 
-
+    
    
 
     void createStationList( lv_obj_t * parent) {

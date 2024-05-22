@@ -456,9 +456,12 @@ void loop()
 
 
   uint16_t vum = 0;
+  uint32_t _codec = 0;
   
   if(audioIsRunning){
       vum = audioGetVUlevel();
+    //   _codec = audioGetCodec();
+    // // GUI.setStreamEncoder(_codecname[4]);
     }
 
   //UPDATE VU-METER (IF ANY)
@@ -486,18 +489,30 @@ void wifimanager_drdStopped(const char* info){
 }
 
 // ************** AUDIO CALLBACKS *************************************
+const char* _codecname[10] = {"unknown", "WAV", "MP3", "AAC", "M4A", "FLAC", "AACP", "OPUS", "OGG", "VORBIS"};
+
+void audio_info(const char* info) {
+ //  LV_LOG_USER(info);
+
+}
 
 void audio_showstation(const char* info) {
+
   xSemaphoreTakeRecursive(lvgl_mux, portMAX_DELAY);
   GUI.setStationPlaying(info);
+
   xSemaphoreGiveRecursive(lvgl_mux);
 }
 
 void audio_showstreamtitle(const char* info) {
   xSemaphoreTakeRecursive(lvgl_mux, portMAX_DELAY);
+
   GUI.setTitlePlaying(info);
   xSemaphoreGiveRecursive(lvgl_mux);
 }
+
+//
+
 
 void gui_volume_up(){
   if(_lastVolume < _maxVolume){

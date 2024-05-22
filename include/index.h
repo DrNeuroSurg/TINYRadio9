@@ -316,7 +316,7 @@ const char index_partOne[] PROGMEM = R"=====(
   
   <body>
     <h1><br>T.I.N.Y.Radio</h1>
-    <h2>(This Is Not yoRadio)</h2>
+    <h2>(This Is Not YoRadio)</h2>
 
     <div id='editor_holder'></div>
    

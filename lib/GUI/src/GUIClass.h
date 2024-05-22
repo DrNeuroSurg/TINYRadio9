@@ -53,8 +53,10 @@ class GuiClass {
         virtual void tuneToStation(uint8_t index)
         {
         }
+
         virtual void setStations(TinyStations stations) {
         }
+
 
         void decodeJSON(String json)
         {
