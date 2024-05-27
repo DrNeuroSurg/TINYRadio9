@@ -22,24 +22,27 @@
 
 #include <lvgl.h>
 
-#define HOST_NAME   "TinyRadio" //FOR CONNECT VIA BROWSER -> use TinyRadio.local !
+  #define HOST_NAME   "TinyRadio" //FOR CONNECT VIA BROWSER -> use TinyRadio.local !
+
+  #define INDICATOR_MOVE_TIME 2000 // 2 sec. (2000 mS) from left to right
+
+
+  //AUDIO
+  #define VOLUME_STEPS 21
+  #define MAX_STATIONS 19
 
   //LVGL
   #define LVGL_TASK_DELAY_MS   10
 
   #define LVGL_TASK_CORE 1
-  #define LVGL_TASK_PRIO 2
+  #define LVGL_TASK_PRIO 5
+
 
 
   // //PREFERENCES
   #define PREFS_NAME    "TinyRadio"
   #define LAST_STATION  "rec_lastStation"
   #define LAST_VOLUME   "rec_lastVolume"
-
-
-  //AUDIO
-  #define VOLUME_STEPS 40
-  #define MAX_STATIONS 19
 
   // // GUI
   #define RADIUS 2
@@ -53,7 +56,7 @@
   #define MARKER_HEIGHT 6
   #define MARKER_WIDTH X_INC
 
-  #define INDICATOR_MOVE_TIME 2000 // 2 sec. (2000 mS) from left to right
+
 
   //BUTTONMATRIX SYMBOLS
   static const char * btnm_map[] = {LV_SYMBOL_VOLUME_MID, LV_SYMBOL_PREV, LV_SYMBOL_NEXT, LV_SYMBOL_VOLUME_MAX ,""};

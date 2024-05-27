@@ -183,24 +183,51 @@ class RetroGUI: public GuiClass {
         _maxVolume = maxValue;
     }
 
-    void setVolumeIndicator(uint8_t value){
-
-        if(scale_bot) {
-            //CALCULATE POSITION
-            int32_t width = lv_obj_get_width(scale_bot); //480.0;
-            int32_t step = width / _maxVolume;
-            uint32_t volumePosition = step * value;
-            if(volumePosition < 0 ) {volumePosition = 0 ;}
-            //SET IT
-            lv_obj_set_x(volume_indicator, volumePosition);
-        }
-    }
 
     //ANIMATION CALLBACK
     static void anim_x_cb(void * var, int32_t v)
     {
         lv_obj_set_x((lv_obj_t *) var, v);
     }
+
+    void setVolumeIndicator(uint8_t value){
+
+        if(scale_bot) {
+            uint32_t pw2 = POINTER_WIDTH / 2;
+            
+            uint32_t _lastVolumePosition = lv_obj_get_x(volume_indicator);
+            //CALCULATE NEW POSITION
+            int32_t width = lv_obj_get_width(scale_bot); //480.0;
+            int32_t step = width / _maxVolume;
+            uint32_t _nextVolumePosition = step * value;
+            
+            if(_nextVolumePosition < 0 ) {_nextVolumePosition = pw2 ;}
+             float _pixel_time =   INDICATOR_MOVE_TIME / TFT_HOR_RES ; // PIXEL / mSec
+            uint32_t _move_distance = abs ((int32_t) (_lastVolumePosition - _nextVolumePosition) );
+            uint32_t _move_time =  _pixel_time * _move_distance; //_pixel_time * distance
+
+            // //SET IT
+
+            //ANIMATION
+            lv_anim_t a;
+            lv_anim_init(&a);
+
+            lv_anim_set_var(&a, volume_indicator);
+            lv_anim_set_duration(&a, _move_time);
+            lv_anim_set_values(&a, _lastVolumePosition, _nextVolumePosition);
+
+            /*Set path (curve). Default is linear*/
+            lv_anim_set_path_cb(&a, lv_anim_path_ease_in_out);
+
+            //set Callback
+            lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t) lv_obj_set_x);
+
+            lv_anim_start(&a);
+
+        }
+    }
+
+
 
     void tuneToStation(uint8_t station_id) {
         uint32_t pw2 = POINTER_WIDTH / 2;

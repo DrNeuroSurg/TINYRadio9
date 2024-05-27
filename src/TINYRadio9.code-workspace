@@ -10,7 +10,9 @@
 			"lv_api_map_v9_0.h": "c",
 			"lv_sprintf.h": "c",
 			"atomic": "cpp",
-			"condition_variable": "cpp"
+			"condition_variable": "cpp",
+			"lv_obj.h": "c",
+			"lv_group.h": "c"
 		}
 	}
 }

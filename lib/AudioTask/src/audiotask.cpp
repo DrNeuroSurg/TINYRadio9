@@ -17,7 +17,7 @@
 #
 Audio audio;
 
-enum : uint8_t { SET_VOLUME, GET_VOLUME, GET_MAX_VOLUME, GET_BITRATE, CONNECTTOHOST, CONNECTTOFS, STOPSONG, SETTONE, INBUFF_FILLED,
+enum : uint8_t { SET_VOLUME, GET_VOLUME, GET_MAX_VOLUME,SET_MAX_VOLUME, GET_BITRATE, CONNECTTOHOST, CONNECTTOFS, STOPSONG, SETTONE, INBUFF_FILLED,
                  INBUFF_FREE, INBUFF_SIZE, ISRUNNING, HIGHWATERMARK, GET_CODEC, PAUSERESUME, CONNECTION_TIMEOUT, GET_FILESIZE,
                  GET_FILEPOSITION, GET_VULEVEL, GET_AUDIOFILEDURATION, GET_AUDIOCURRENTTIME};
 
@@ -85,6 +85,14 @@ void audioTask(void *parameter) {
                 audioTxTaskMessage.ret = audio.maxVolume();
                 xQueueSend(audioGetQueue, &audioTxTaskMessage, portMAX_DELAY);
             }
+            else if(audioRxTaskMessage.cmd == SET_MAX_VOLUME){
+                audioTxTaskMessage.cmd = SET_MAX_VOLUME;
+                uint8_t _steps = audioRxTaskMessage.value1;
+                audio.setVolumeSteps(_steps);
+                audioTxTaskMessage.ret = 0;
+                xQueueSend(audioGetQueue, &audioTxTaskMessage, portMAX_DELAY);
+            }
+
             else if(audioRxTaskMessage.cmd == GET_BITRATE){
                 audioTxTaskMessage.cmd = GET_BITRATE;
                 audioTxTaskMessage.ret = audio.getBitRate(true);
@@ -222,6 +230,14 @@ uint8_t audioGetVolume(){
     audioTxMessage.cmd = GET_VOLUME;
     audioMessage RX = transmitReceive(audioTxMessage);
     return RX.ret;
+}
+
+void audioSetMaxVolume(uint8_t maxVolume) {
+    audioTxMessage.cmd = SET_MAX_VOLUME;
+    audioTxMessage.value1 = maxVolume;
+    audioMessage RX = transmitReceive(audioTxMessage);
+    (void)RX;
+
 }
 
 uint8_t audioGetMaxVolume(){

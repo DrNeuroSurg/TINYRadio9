@@ -107,6 +107,7 @@ void savePrefs() {
 void loadPrefs() {
    preferences.begin(PREFS_NAME, false);
   _lastVolume = preferences.getLong(LAST_VOLUME, 3);
+  if(_lastVolume > VOLUME_STEPS) {_lastVolume = VOLUME_STEPS /2;}   //HALF OF MAX
   _lastStation= preferences.getLong(LAST_STATION, 0);
   preferences.end();
 }
@@ -421,6 +422,7 @@ void setup()
     //LET AUDIO DO ITS WORK - TASK ON CORE 1
     audioInit();
 
+    audioSetMaxVolume(VOLUME_STEPS);  //tinyDefs.h
     _maxVolume = audioGetMaxVolume();
     GUI.setVolumeIndicatorMax(_maxVolume);
 
@@ -460,8 +462,6 @@ void loop()
   
   if(audioIsRunning){
       vum = audioGetVUlevel();
-    //   _codec = audioGetCodec();
-    // // GUI.setStreamEncoder(_codecname[4]);
     }
 
   //UPDATE VU-METER (IF ANY)

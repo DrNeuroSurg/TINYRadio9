@@ -8,6 +8,7 @@ void           audioTaskDelete();
 void           audioSetVolume(uint8_t vol);
 uint8_t        audioGetVolume();
 uint8_t        audioGetMaxVolume();
+void           audioSetMaxVolume(uint8_t maxVolume) ;
 uint32_t       audioGetBitRate();
 boolean        audioConnecttohost(const char* host, const char* user = "", const char* pwd = "");
 boolean        audioConnecttoFS(const char* filename, uint32_t resumeFilePos = 0);
