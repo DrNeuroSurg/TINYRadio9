@@ -1,8 +1,17 @@
+/****************************************************************************************************************************
+  This is for  WT32_SC01_PLUS boards only !
+
+  Licensed under MIT license
+
+  by DrNeurosurg 2024
+
+  *****************************************************************************************************************************/
+
 /*
  *  index.h
  *
  *  Created on: 10.05.2024
- *  Updated on: 11.05.2024
+ *  Updated on: 03.06.2024
  *      Author: DrNeurosurg
  *
  *  successfully tested with Chrome and Firefox and Safari
@@ -465,7 +474,7 @@ const char index_PayLoad[] PROGMEM = R"=====(
                 {shortName: "RADIO.EINS", StreamURL: "http://www.radioeins.de/livemp3"},
                 {shortName: "COSTA.D.MAR", StreamURL: "http://radio4.cdm-radio.com:8020/stream-mp3-Chill_autodj"},
                 {shortName: "Kiss.FM", StreamURL: "http://topradio-stream31.radiohost.de/kissfm_mp3-128"},
-                {shortName: "sun radio", StreamURL: "http://radio2.vip-radios.fm:8068/stream-128kmp3-CafeSoulside_autodj"}
+                {shortName: "PARADISE", StreamURL: "http://stream-uk1.radioparadise.com/aac-320"}
                ]};
 )====="; 
 

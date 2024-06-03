@@ -2,6 +2,10 @@
 	"folders": [
 		{
 			"path": ".."
+		},
+		{
+			"name": "WT32_Clock",
+			"path": "../../WT32_Clock"
 		}
 	],
 	"settings": {

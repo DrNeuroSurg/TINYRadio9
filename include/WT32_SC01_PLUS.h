@@ -11,7 +11,7 @@ LovyanGFX by lovyan03
 Version 1.1.12
 
 lvgl by kisvegabor
-Version 9.0.0
+Version 9.1.0
 
 
 Board: ESP32S3 Dev Module

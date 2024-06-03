@@ -29,9 +29,9 @@ class GuiClass {
         };
 
         //"NOW PLAYING"
-        virtual void setStationPlaying(const char * station){
+        virtual void setStationPlaying(const char * station, bool store){
         };
-        virtual void setTitlePlaying(const char * title){
+        virtual void setTitlePlaying(const char * title, bool store){
          };
 
 
@@ -52,10 +52,14 @@ class GuiClass {
 
         virtual void tuneToStation(uint8_t index)
         {
-        }
+        };
 
         virtual void setStations(TinyStations stations) {
-        }
+        };
+
+        virtual uint32_t getStationMidX(uint8_t stationIndex) {
+            return 0;
+        };
 
 
         void decodeJSON(String json)

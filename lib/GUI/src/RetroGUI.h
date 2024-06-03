@@ -1,3 +1,12 @@
+/****************************************************************************************************************************
+  This is for  WT32_SC01_PLUS boards only !
+
+  Licensed under MIT license
+
+  by DrNeurosurg 2024
+
+  *****************************************************************************************************************************/
+
 #pragma once
 
 #include "GUIClass.h"
@@ -26,6 +35,9 @@ LV_FONT_DECLARE(Berlin10_4);
 class RetroGUI: public GuiClass {
 
   public:
+
+    String last_title = "";
+    String last_station = "";
 
   void update(String json) {
     
@@ -108,7 +120,7 @@ class RetroGUI: public GuiClass {
 
 
 
-#ifdef USE_ENCODER
+#ifdef NO_BUTTONS
 
     bot_lower = createPart(cont,  false);
     lv_obj_set_grid_cell(bot_lower, LV_GRID_ALIGN_STRETCH, 0, 2,
@@ -125,26 +137,49 @@ class RetroGUI: public GuiClass {
     //BUTTONS
     buttons = createButtons(_parent);
     lv_obj_set_size(buttons, lv_pct(100), lv_pct(14)); //100% WIDTH OF PARENT, 100% HEIGHT OF PARENT
-
+    
 #endif
+
 
     //ZEIGER
     station_indicator = createStationIndicator(mid);
     volume_indicator = createVolumeIndicator(bot_upper);
 
     //TITLE & STATION LABEL
+  
+
+#ifdef NO_BUTTONS 
+        LV_FONT_DECLARE(Berlin30_4);
+
+        title_playing = lv_label_create(bot_lower);
+        lv_obj_add_style(title_playing, &playing_style, 0);
+        lv_obj_set_style_text_font(title_playing, &Berlin25_4, 0);
+        lv_obj_set_size(title_playing, lv_pct(100), lv_pct(100));
+
+        lv_obj_set_style_text_align(title_playing , LV_TEXT_ALIGN_CENTER, 0);
+        lv_obj_clear_flag(title_playing, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_align(title_playing, LV_ALIGN_CENTER, 0, 5);
+
+        station_playing = lv_label_create(tr);
+         lv_obj_add_style(station_playing, &playing_style, 0);
+        lv_obj_set_style_text_font(station_playing, &Berlin30_4, 0);
+        lv_obj_set_size(station_playing, lv_pct(100), lv_pct(100));
+
+        lv_obj_set_style_text_align(station_playing , LV_TEXT_ALIGN_CENTER, 0);
+        lv_obj_clear_flag(station_playing, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_align(station_playing, LV_ALIGN_CENTER, 0, 10);
+
+#else
     station_playing = createPlayingLabel(tr, &Retro20_4, true, false);
     title_playing = createPlayingLabel(tr, &Retro20_4, false, false);
 
+#endif
+
     lv_label_set_long_mode(station_playing, LV_LABEL_LONG_SCROLL_CIRCULAR);  
-    lv_label_set_text(station_playing, _station.c_str());
+    lv_label_set_text(station_playing, last_station.c_str());
+
     lv_label_set_long_mode(title_playing, LV_LABEL_LONG_SCROLL_CIRCULAR);  
-    lv_label_set_text(title_playing, _title.c_str());
-
-    //TEST 
-    // btn_tuneNext = createSingleButton(_parent, LV_SYMBOL_NEXT );  //WORKS
-    // lv_obj_set_size(btn_tuneNext, 116, 40);
-
+    lv_label_set_text(title_playing, last_title.c_str());
   }
 
   void begin(lv_obj_t * parent, String json){
@@ -163,16 +198,16 @@ class RetroGUI: public GuiClass {
     }
 
     //  STATION
-    void setStationPlaying(const char * station){
-        _station = station;
+    void setStationPlaying(const char * station, bool store = true){
+        if(store) { last_station = station; }
         if(station_playing) {
         lv_label_set_text(station_playing, station);
         }
     }
     
     // TITLE
-    void setTitlePlaying(const char * title){
-        _title = title;
+    void setTitlePlaying(const char * title, bool store = true){
+        if(store) { last_title = title;}
         if(title_playing) {
          lv_label_set_text(title_playing, title);
         }
@@ -202,32 +237,55 @@ class RetroGUI: public GuiClass {
             uint32_t _nextVolumePosition = step * value;
             
             if(_nextVolumePosition < 0 ) {_nextVolumePosition = pw2 ;}
-             float _pixel_time =   INDICATOR_MOVE_TIME / TFT_HOR_RES ; // PIXEL / mSec
-            uint32_t _move_distance = abs ((int32_t) (_lastVolumePosition - _nextVolumePosition) );
-            uint32_t _move_time =  _pixel_time * _move_distance; //_pixel_time * distance
 
-            // //SET IT
+            #ifdef USE_ENCODER_VOLUME
+                //SET IT DIRECT (W/O ANIMATION)
+                lv_obj_set_x(volume_indicator,_nextVolumePosition);
+            #else
+                //ANIMATION
+                float _pixel_time =   INDICATOR_MOVE_TIME / TFT_HOR_RES ; // PIXEL / mSec
+                uint32_t _move_distance = abs ((int32_t) (_lastVolumePosition - _nextVolumePosition) );
+                uint32_t _move_time =  _pixel_time * _move_distance; //_pixel_time * distance
+                lv_anim_t a;
+                lv_anim_init(&a);
 
-            //ANIMATION
-            lv_anim_t a;
-            lv_anim_init(&a);
+                lv_anim_set_var(&a, volume_indicator);
+                lv_anim_set_duration(&a, _move_time);
+                lv_anim_set_values(&a, _lastVolumePosition, _nextVolumePosition);
 
-            lv_anim_set_var(&a, volume_indicator);
-            lv_anim_set_duration(&a, _move_time);
-            lv_anim_set_values(&a, _lastVolumePosition, _nextVolumePosition);
+                /*Set path (curve). Default is linear*/
+                lv_anim_set_path_cb(&a, lv_anim_path_ease_in_out);
 
-            /*Set path (curve). Default is linear*/
-            lv_anim_set_path_cb(&a, lv_anim_path_ease_in_out);
+                //set Callback
+                lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t) lv_obj_set_x);
 
-            //set Callback
-            lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t) lv_obj_set_x);
-
-            lv_anim_start(&a);
+                lv_anim_start(&a);
+            #endif
 
         }
     }
 
+    bool inRange(int val, int minimum, int maximum)
+    {
+         return ((minimum <= val) && (val <= maximum));
+    }
 
+    int8_t getStationIndexUnderIndicator(uint32_t indicatorPos) {
+
+            int8_t ret = -1;
+            uint8_t _numStations = _stations.size();
+            for(uint8_t idx = 0; idx < _numStations; idx++)
+            {
+                if( inRange(indicatorPos, _stations[idx].startX,_stations[idx].endX ) ) {
+                    return idx;
+                }
+            }
+            return ret;
+    }
+
+    void setTuneIndicator(uint32_t newPosition) {
+        lv_obj_set_x(station_indicator, newPosition - POINTER_WIDTH/2);
+    }
 
     void tuneToStation(uint8_t station_id) {
         uint32_t pw2 = POINTER_WIDTH / 2;
@@ -279,6 +337,10 @@ class RetroGUI: public GuiClass {
         }
      }
 
+     uint32_t getStationMidX(uint8_t stationIndex) {
+        return _stations[stationIndex].midX;
+     }
+
 
   private:
 
@@ -289,8 +351,7 @@ class RetroGUI: public GuiClass {
     uint8_t _volume;
     uint32_t _lastStationMid = 0;
 
-    String _title = "";
-    String _station = "";
+
 
 
     uint32_t _pointer_width = 8;
@@ -820,27 +881,25 @@ class RetroGUI: public GuiClass {
         lv_obj_t * obj = (lv_obj_t *) lv_event_get_target(e);
         if(code == LV_EVENT_VALUE_CHANGED) {
             uint32_t id = lv_buttonmatrix_get_selected_button(obj);
-            switch (id) {
+            //BUTTONMATRIX SYMBOLS
+            // {LV_SYMBOL_VOLUME_MID, LV_SYMBOL_PREV, LV_SYMBOL_NEXT, LV_SYMBOL_VOLUME_MAX ,""};
+            char * btn = (char *) lv_buttonmatrix_get_button_text(obj,id);
 
-            case 0:   //LEFTMOST
+            if(btn == LV_SYMBOL_VOLUME_MID) {
+               // LV_LOG_USER("VOLUME--");
                 if(gui_volume_down) { gui_volume_down();} //IF CALLBACK -> CALL IT
-                break;
 
-            case 1:
-                if(gui_station_prev) { gui_station_prev();} //IF CALLBACK -> CALL IT
-                break;
+            } else if (btn == LV_SYMBOL_VOLUME_MAX) {
+                 // LV_LOG_USER("VOLUME++");
+                  if(gui_volume_up) { gui_volume_up();} //IF CALLBACK -> CALL IT
 
-            case 2:
-                if(gui_station_next) { gui_station_next();} //IF CALLBACK -> CALL IT
-                break;
+            } else if (btn == LV_SYMBOL_PREV) {
+                  //LV_LOG_USER("STATION PREV");
+                  if(gui_station_prev) { gui_station_prev();} 
 
-            case 3:   //RIGHTMOST
-                if(gui_volume_up) { gui_volume_up();} //IF CALLBACK -> CALL IT
-                break;
-
-            default:
-                break;
-
+            } else if (btn == LV_SYMBOL_NEXT) {
+                  //LV_LOG_USER("STATION NEXT");
+                  if(gui_station_next) { gui_station_next();}
             }
         }
     }

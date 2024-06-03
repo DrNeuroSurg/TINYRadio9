@@ -1,7 +1,10 @@
 /****************************************************************************************************************************
- for  WT32_SC01_PLUS boards only !
+  This is for  WT32_SC01_PLUS boards only !
 
   Licensed under MIT license
+
+  by DrNeurosurg 2024
+
   *****************************************************************************************************************************/
 
 
@@ -37,6 +40,30 @@ bool _drdStopped = false;
 SemaphoreHandle_t lvgl_mux;
 
 
+//ENCODER
+#include "AiEsp32RotaryEncoder.h"
+#define ROTARY_ENCODER_STEPS 4
+
+//VOLUME_ENCODER
+#ifdef USE_ENCODER_VOLUME
+  AiEsp32RotaryEncoder volumeEncoder = AiEsp32RotaryEncoder(ENC_VOLUME_A_PIN, ENC_VOLUME_B_PIN, ENC_VOUME_BUTTON_PIN, -1, ROTARY_ENCODER_STEPS);
+
+  void IRAM_ATTR volume_readEncoderISR() {
+    volumeEncoder.readEncoder_ISR();
+  }
+
+#endif
+
+
+//TUNE_ENCODER
+#ifdef USE_ENCODER_TUNE
+  AiEsp32RotaryEncoder tuneEncoder = AiEsp32RotaryEncoder(ENC_TUNE_A_PIN, ENC_TUNE_B_PIN, ENC_TUNE_BUTTON_PIN, -1, ROTARY_ENCODER_STEPS);
+
+  void IRAM_ATTR tune_readEncoderISR() {
+    tuneEncoder.readEncoder_ISR();
+  }
+#endif
+
 //GUI
 
   #include "RetroGUI.h"
@@ -55,7 +82,7 @@ TinyStations stations(tinyStations);
 //AUDIO
 #include "Audio.h"     //wolle aka schreibfaul1
 #include "audiotask.h"
-
+bool _isPaused = false;
 
 #include <Preferences.h>
 Preferences preferences;
@@ -78,8 +105,8 @@ const char defaultJson[] PROGMEM = R"=====(
 "StreamURL":"http://radio4.cdm-radio.com:8020/stream-mp3-Chill_autodj"},
 {"shortName":"Kiss.FM",
 "StreamURL":"http://topradio-stream31.radiohost.de/kissfm_mp3-128"},
-{"shortName":"sun radio",
-"StreamURL":"http://radio2.vip-radios.fm:8068/stream-128kmp3-CafeSoulside_autodj"}
+{"shortName":"paradise",
+"StreamURL":"http://stream-uk1.radioparadise.com/aac-320"}
 ]}
 )====="; 
 
@@ -394,7 +421,7 @@ void setup()
     lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x0), 0);
     lv_obj_set_style_bg_opa(lv_scr_act(), LV_OPA_COVER,0);     
 
-        //LAST_VOLUME, LAST_STATION
+    //LAST_VOLUME, LAST_STATION
     loadPrefs();
     // LAST_VOLUME
     if(_lastVolume > _maxVolume) {_lastVolume = _maxVolume;}
@@ -430,15 +457,103 @@ void setup()
     xSemaphoreTakeRecursive(lvgl_mux, portMAX_DELAY);
     GUI.setVolumeIndicator(_lastVolume);
     xSemaphoreGiveRecursive(lvgl_mux);
-
-
     
-    xSemaphoreTakeRecursive(lvgl_mux, portMAX_DELAY);
-    GUI.tuneToStation(_lastStation);
-    xSemaphoreGiveRecursive(lvgl_mux);
-    audioConnecttohost(tinyStations[_lastStation].URL.c_str());
+    
+    //ENCODER
+    #ifdef USE_ENCODER_VOLUME
+      //we must initialize rotary encoder
+      volumeEncoder.begin();
+      volumeEncoder.setup(volume_readEncoderISR);
+      //set boundaries and if values should cycle or not
+      bool circleValues_volume = false;
+      volumeEncoder.setBoundaries(0, VOLUME_STEPS, circleValues_volume);  //minValue, maxValue, circleValues true|false (when max go to min and vice versa)
+      volumeEncoder.disableAcceleration();
+      volumeEncoder.setEncoderValue(_lastVolume);
+    #endif
+
+    #ifdef USE_ENCODER_TUNE
+      //we must initialize rotary encoder
+      tuneEncoder.begin();
+      tuneEncoder.setup(tune_readEncoderISR);
+      //set boundaries and if values should cycle or not
+      bool circleValues_tune = false;
+      tuneEncoder.setBoundaries(0, TFT_HOR_RES - POINTER_WIDTH * 1.5, circleValues_tune);  //minValue, maxValue, circleValues true|false (when max go to min and vice versa)
+      //tuneEncoder.disableAcceleration();
+      tuneEncoder.setEncoderValue(GUI.getStationMidX(_lastStation));
+    #endif
+
+      xSemaphoreTakeRecursive(lvgl_mux, portMAX_DELAY);
+      GUI.tuneToStation(_lastStation);
+      xSemaphoreGiveRecursive(lvgl_mux);
+      audioConnecttohost(tinyStations[_lastStation].URL.c_str());
 
 }
+
+
+  #ifdef USE_ENCODER_VOLUME
+  void rotary_volume_loop() {
+    //dont do anything unless value changed
+    if (volumeEncoder.encoderChanged()) {
+      uint8_t v = (uint8_t) volumeEncoder.readEncoder();
+      if(v <= _maxVolume) {
+        _lastVolume = v;
+        audioSetVolume(_lastVolume);
+        xSemaphoreTakeRecursive(lvgl_mux, portMAX_DELAY);
+        GUI.setVolumeIndicator(_lastVolume);
+        xSemaphoreGiveRecursive(lvgl_mux);
+        savePrefs();
+      }
+    }
+   // handle_rotary_button();
+  }
+  #endif
+
+  #ifdef USE_ENCODER_TUNE
+  //EXPERIEMANTAL !!
+  void rotary_tune_loop() {
+    //dont do anything unless value changed
+    if (tuneEncoder.encoderChanged()) {
+        uint32_t v =  tuneEncoder.readEncoder();
+        xSemaphoreTakeRecursive(lvgl_mux, portMAX_DELAY);
+        GUI.setTuneIndicator(v);
+        xSemaphoreGiveRecursive(lvgl_mux);
+        int8_t idx = GUI.getStationIndexUnderIndicator(v);
+        if(idx >= 0) {
+          if(idx != _lastStation) { //NEW STATION
+               LV_LOG_USER("NEW STATION !!!");
+              _lastStation = idx;
+              audioConnecttohost(tinyStations[_lastStation].URL.c_str());
+              audioSetVolume(_lastVolume);
+              savePrefs();
+              _isPaused = false;
+
+          } else { //SAME STATION(AGAIN)
+             LV_LOG_USER(" * SAME STATION *");
+              xSemaphoreTakeRecursive(lvgl_mux, portMAX_DELAY);
+              GUI.setStationPlaying(GUI.last_station.c_str());
+              GUI.setTitlePlaying(GUI.last_title.c_str());
+              xSemaphoreGiveRecursive(lvgl_mux);
+              audioSetVolume(_lastVolume);
+              savePrefs();
+              _isPaused = false;
+
+            //  if(_isPaused) {_isPaused = audioPauseResume(); }
+          }
+        } else {    //NO STATION
+           LV_LOG_USER("** NO STATION **");
+            // if(!_isPaused) {_isPaused = audioPauseResume(); }
+          //  _isPaused = audioPauseResume();
+           xSemaphoreTakeRecursive(lvgl_mux, portMAX_DELAY);
+           GUI.setStationPlaying("", false); //DONN'T STORE
+           GUI.setTitlePlaying("", false);
+           xSemaphoreGiveRecursive(lvgl_mux);
+            audioSetVolume(0); //MUTE
+            _isPaused = true;
+        }
+      }
+         // handle_rotary_button();
+  }
+#endif
 
 void loop()
 {
@@ -462,13 +577,26 @@ void loop()
   
   if(audioIsRunning){
       vum = audioGetVUlevel();
+
+      #ifdef USE_ENCODER_VOLUME
+        rotary_volume_loop();
+      #endif
+      
+      #ifdef USE_ENCODER_TUNE
+        rotary_tune_loop();
+      #endif
+
     }
 
   //UPDATE VU-METER (IF ANY)
-  xSemaphoreTakeRecursive(lvgl_mux, portMAX_DELAY);
-  GUI.setVUMeterValue(vum);
-  xSemaphoreGiveRecursive(lvgl_mux);
-
+    xSemaphoreTakeRecursive(lvgl_mux, portMAX_DELAY);
+     if(_isPaused) { 
+        GUI.setVUMeterValue(0);
+     } else {
+         GUI.setVUMeterValue(vum);
+     }
+    xSemaphoreGiveRecursive(lvgl_mux);
+  
 }
 
 // ************** WIFI_MANAGER CALLBACKS *************************************
@@ -495,7 +623,6 @@ void audio_info(const char* info) {
  //  LV_LOG_USER(info);
 
 }
-
 void audio_showstation(const char* info) {
 
   xSemaphoreTakeRecursive(lvgl_mux, portMAX_DELAY);
@@ -511,9 +638,8 @@ void audio_showstreamtitle(const char* info) {
   xSemaphoreGiveRecursive(lvgl_mux);
 }
 
-//
 
-
+// ************** BUTTON (GUI) CALLBACKS *************************************
 void gui_volume_up(){
   if(_lastVolume < _maxVolume){
     _lastVolume++;
@@ -536,7 +662,6 @@ void gui_volume_down(){
     savePrefs();
   }
 }
-
 
 void gui_station_next(){
   if(_lastStation < _num_stations -1 ) {

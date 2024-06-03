@@ -1,3 +1,12 @@
+/****************************************************************************************************************************
+  This is for  WT32_SC01_PLUS boards only !
+
+  Licensed under MIT license
+
+  by DrNeurosurg 2024
+
+  *****************************************************************************************************************************/
+
 #ifndef _STATIONS_H_
 #define _STATIONS_H_
 
@@ -48,8 +57,8 @@ class TinyStations {
       station.index = 3;
       array.push_back(station);
 
-      station.ShortName = "sun radio";
-      station.URL = "http://radio2.vip-radios.fm:8068/stream-128kmp3-CafeSoulside_autodj";
+      station.ShortName = "paradise";
+      station.URL = "http://stream-uk1.radioparadise.com/aac-320";
       station.index = 4;
       array.push_back(station);
 
