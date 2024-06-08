@@ -130,6 +130,7 @@ void savePrefs() {
    preferences.putLong(LAST_VOLUME, _lastVolume);
    preferences.putLong(LAST_STATION, _lastStation);
   preferences.end();
+   LV_LOG_USER("SETTINGS SAVED");
 }
 
 void loadPrefs() {
@@ -138,6 +139,7 @@ void loadPrefs() {
   if(_lastVolume > VOLUME_STEPS) {_lastVolume = VOLUME_STEPS /2;}   //HALF OF MAX
   _lastStation= preferences.getLong(LAST_STATION, 0);
   preferences.end();
+  LV_LOG_USER("SETTINGS LOADED");
 }
 
 // ****************** UI SETTINGS (COLORS, STATIONS, ..) *******************************************
@@ -299,7 +301,7 @@ void vuTask(void *parameter) {
         GUI.setVUMeterValue(_vum);
      }
     xSemaphoreGiveRecursive(lvgl_mux);
-    vTaskDelay(pdMS_TO_TICKS(100 ));
+    vTaskDelay(pdMS_TO_TICKS( 50 ));
 
   }
 }
@@ -458,20 +460,24 @@ void setup()
     lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x0), 0);
     lv_obj_set_style_bg_opa(lv_scr_act(), LV_OPA_COVER,0);     
 
+        // STATIONS, COLORS ..
+    String jsonSettings = loadJSON();
+    stations.loadFromJson(tinyStations, jsonSettings);
+    _num_stations = tinyStations.size();
+
     //LAST_VOLUME, LAST_STATION
     loadPrefs();
+
     // LAST_VOLUME
     if(_lastVolume > _maxVolume) {_lastVolume = _maxVolume;}
     if(_lastVolume < 0) {_lastVolume = 0;}
+    
       //LAST STATION
     if(_lastStation < 0) { _lastStation = 0;}
     if(_lastStation > _num_stations) { _lastStation = _num_stations - 1; }
 
     savePrefs(); // TO BE SURE ...
-        // STATIONS, COLORS ..
-    String jsonSettings = loadJSON();
-    stations.loadFromJson(tinyStations, jsonSettings);
-    _num_stations = tinyStations.size();
+
 
     // PUSH TO GUI
     xSemaphoreTakeRecursive(lvgl_mux, portMAX_DELAY);
@@ -626,16 +632,6 @@ void loop()
       #endif
 
     }
-
-  // //UPDATE VU-METER (IF ANY)
-  //   xSemaphoreTakeRecursive(lvgl_mux, portMAX_DELAY);
-  //    if(_isPaused) { 
-  //       GUI.setVUMeterValue(0);
-  //    } else {
-  //        GUI.setVUMeterValue(vum);
-  //    }
-  //   xSemaphoreGiveRecursive(lvgl_mux);
-    
 }
 
 // ************** WIFI_MANAGER CALLBACKS *************************************
@@ -709,7 +705,7 @@ void gui_station_next(){
     GUI.tuneToStation(_lastStation);
     xSemaphoreGiveRecursive(lvgl_mux);
 
-     audioConnecttohost(tinyStations[_lastStation].URL.c_str());
+    audioConnecttohost(tinyStations[_lastStation].URL.c_str());
     savePrefs();
   }
 }
