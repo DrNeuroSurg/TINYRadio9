@@ -1,11 +1,8 @@
 # THIS IS ONLY FOR WT32-SC01-PLUS 
 # (NOT WT32-SC01)
 
-<<<<<<< HEAD
 ## ![Screenshot](/images/screen.png)
-=======
-![Screenshot](/images/screen.png)
->>>>>>> 8956480694c9f3c1ac1eea3b137fba805344120a
+
 ## ![Screenshot](/images/Screen2.jpg)
 
 ## "release" contains the firmware.
