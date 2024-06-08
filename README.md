@@ -2,7 +2,7 @@
 # (NOT WT32-SC01)
 
 ![Screenshot](/images/screen.png)
-![Screenshot](/images/Screen2.jpg)
+## ![Screenshot](/images/Screen2.jpg)
 
 ## "release" contains the firmware.
 
