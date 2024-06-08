@@ -14,8 +14,9 @@
 
 #include <lvgl.h>
 
-#define HOST_NAME   "TinyRadio" //FOR CONNECT VIA BROWSER -> use TinyRadio.local !
 
+//COMMENT NEXT LINE, IF YOU WANT TO USE "EM11" FOR VU-METER
+#define USE_VU_METER
 
 //UNCOMMENT NEXT LINE, IF YOU WANT TO USE ENCODER FOR VOLUME
 //#define USE_ENCODER_VOLUME
@@ -36,6 +37,13 @@
   #define ENC_TUNE_A_PIN          14
   #define ENC_TUNE_B_PIN          21
 #endif
+
+#define HOST_NAME   "TinyRadio" //FOR CONNECT VIA BROWSER -> use TinyRadio.local !
+
+//********************************************************************************
+//*********  DON'T CHANGE ANYTHING BELOW THIS LINE !! ****************************
+//********************************************************************************
+
 
 //BUTTONMATRIX SYMBOLS
 //NO ENCODER

@@ -112,6 +112,7 @@ const char defaultJson[] PROGMEM = R"=====(
 
 uint8_t _lastVolume = 5;
 uint8_t _lastStation = 0;
+uint16_t _vum = 0;
 
 uint8_t _maxVolume = 21;
 uint8_t _num_stations = 1;
@@ -260,9 +261,9 @@ void lvglTask(void *parameter) {
   while(true)
   {
      xSemaphoreTakeRecursive(lvgl_mux, portMAX_DELAY);
-      ms = lv_timer_handler();
+     ms = lv_timer_handler();
     xSemaphoreGiveRecursive(lvgl_mux);
-      vTaskDelay(pdMS_TO_TICKS(ms ));
+    vTaskDelay(pdMS_TO_TICKS(ms ));
 
   }
 }
@@ -281,6 +282,42 @@ void createLVGL_Task() {
 
 void lvglTaskDelete(){
     vTaskDelete(Task_lvgl);
+}
+
+// ****************** VU-METER  TASK ***********************************
+TaskHandle_t Task_vu;
+
+void vuTask(void *parameter) {
+  //vuMeter
+  while(true)
+  {
+  //UPDATE VU-METER (IF ANY)
+    xSemaphoreTakeRecursive(lvgl_mux, portMAX_DELAY);
+     if(_isPaused) { 
+        GUI.setVUMeterValue(0);
+     } else {
+        GUI.setVUMeterValue(_vum);
+     }
+    xSemaphoreGiveRecursive(lvgl_mux);
+    vTaskDelay(pdMS_TO_TICKS(100 ));
+
+  }
+}
+
+void createVU_Task() {
+  xTaskCreatePinnedToCore(
+        vuTask,              /* Function to implement the task */
+        "vuTask",            /* Name of the task */
+        10000,                   /* Stack size in words */
+        NULL,                   /* Task input parameter */
+        20,                     /* Priority of the task */
+        &Task_vu,                 /* Task handle. */
+        LVGL_TASK_CORE          /* Core where the task should run */
+    );
+}
+
+void vuTaskDelete(){
+    vTaskDelete(Task_vu);
 }
 
 //TODO:
@@ -487,6 +524,8 @@ void setup()
       xSemaphoreGiveRecursive(lvgl_mux);
       audioConnecttohost(tinyStations[_lastStation].URL.c_str());
 
+      createVU_Task();
+
 }
 
 
@@ -572,11 +611,11 @@ void loop()
   }
 
 
-  uint16_t vum = 0;
+
   uint32_t _codec = 0;
   
   if(audioIsRunning){
-      vum = audioGetVUlevel();
+      _vum = audioGetVUlevel();
 
       #ifdef USE_ENCODER_VOLUME
         rotary_volume_loop();
@@ -588,15 +627,15 @@ void loop()
 
     }
 
-  //UPDATE VU-METER (IF ANY)
-    xSemaphoreTakeRecursive(lvgl_mux, portMAX_DELAY);
-     if(_isPaused) { 
-        GUI.setVUMeterValue(0);
-     } else {
-         GUI.setVUMeterValue(vum);
-     }
-    xSemaphoreGiveRecursive(lvgl_mux);
-  
+  // //UPDATE VU-METER (IF ANY)
+  //   xSemaphoreTakeRecursive(lvgl_mux, portMAX_DELAY);
+  //    if(_isPaused) { 
+  //       GUI.setVUMeterValue(0);
+  //    } else {
+  //        GUI.setVUMeterValue(vum);
+  //    }
+  //   xSemaphoreGiveRecursive(lvgl_mux);
+    
 }
 
 // ************** WIFI_MANAGER CALLBACKS *************************************

@@ -44,10 +44,11 @@ USB Mode: "Hardware CDC and JTAG"
 
 #ifdef WT_USE_LVGL
   #include <lvgl.h>
+  #include "esp_heap_caps.h"
 #endif  // WT_USE_LVGL
 
 
-#define SCR 30
+//#define SCR 30
 #define LGFX_USE_V1
 
 /* Change to your screen resolution */
@@ -138,7 +139,7 @@ public:
 #endif
       cfg.dummy_read_pixel = 8;
       cfg.dummy_read_bits = 1;
-      cfg.readable = false;
+      cfg.readable = true;
       cfg.invert = true;
       cfg.rgb_order = false;
       cfg.dlen_16bit = false;
@@ -213,7 +214,11 @@ void  touchPadRead(lv_indev_t * indev, lv_indev_data_t * data){
 
 
 const unsigned int lvBufferSize = TFT_HOR_RES * TFT_VER_RES / 10 * (LV_COLOR_DEPTH / 8);
-uint8_t lvBuffer[lvBufferSize];
+// uint8_t lvBuffer[lvBufferSize];
+// uint8_t lvBuffer2[lvBufferSize];
+uint8_t *lvBuffer = (uint8_t *)heap_caps_malloc(lvBufferSize, MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
+uint8_t *lvBuffer2 = (uint8_t *)heap_caps_malloc(lvBufferSize, MALLOC_CAP_INTERNAL | MALLOC_CAP_DMA);
+
 
 
 #endif // WT_USE_LVGL
@@ -243,12 +248,13 @@ void init_display() {
             uint32_t w = lv_area_get_width(area);
             uint32_t h = lv_area_get_height(area);
             lv_draw_sw_rgb565_swap(data, w*h);
-            tft.pushImage(area->x1, area->y1, w, h, (uint16_t*)data);
+            tft.pushImageDMA(area->x1, area->y1, w, h, (uint16_t*)data);
             lv_display_flush_ready(display);
         });
 
 
-    lv_display_set_buffers(display, lvBuffer, nullptr, lvBufferSize, LV_DISPLAY_RENDER_MODE_PARTIAL);
+
+    lv_display_set_buffers(display, lvBuffer, lvBuffer2, lvBufferSize, LV_DISPLAY_RENDER_MODE_PARTIAL);
 
     //create & register touchpad
     lv_indev_t * touchDriver = lv_indev_create();

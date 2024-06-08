@@ -31,6 +31,8 @@ extern __attribute__((weak)) void gui_station_prev();
 
 LV_FONT_DECLARE(Berlin25_4);
 LV_FONT_DECLARE(Berlin10_4);
+LV_IMG_DECLARE(VU_METER_AMBER_SMALL);
+LV_IMG_DECLARE(NEEDLE_RED);
 
 class RetroGUI: public GuiClass {
 
@@ -49,9 +51,19 @@ class RetroGUI: public GuiClass {
     decodeJSON(json);
     createStyles();
 
-        //GRID
-    static int32_t col_dsc[] = {54, LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
+    //GRID
+
+    //COLUMNS
+    #ifdef USE_VU_METER
+         static int32_t col_dsc[] = {85 +2 , LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
+ 
+    #else
+        static int32_t col_dsc[] = {54, LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
+    #endif
+
+    //ROWS
     static int32_t row_dsc[] = {54, 190, 20, LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
+
 
     static lv_point_precise_t top_line_points[] = { {0,0}, {TFT_HOR_RES, 0}};
     static lv_point_precise_t bottom_line_points[] = { {0,TFT_VER_RES -1}, {TFT_HOR_RES, TFT_VER_RES - 1}};
@@ -81,16 +93,25 @@ class RetroGUI: public GuiClass {
     tl = createPart(cont,  true);
     lv_obj_set_grid_cell(tl, LV_GRID_ALIGN_STRETCH, 0, 1,
                             LV_GRID_ALIGN_STRETCH, 0, 1);
-    //ROUND BORDER
-    lv_obj_set_style_radius(tl, 25, 0);
-    lv_obj_set_style_border_width(tl, 2, 0);
+    
 
     //VU-METER
-    em11 = em11_create(tl);
-    em11_set_minMax(em11, 0, 32768);
-    em11_set_rotation(em11, 30);
-    em11_set_value(em11, 0);
-    em11_set_minMax(em11,0,127);
+     #ifdef USE_VU_METER
+        //RECTANGULAR BORDER
+        lv_obj_set_style_radius(tl, 0, 0);
+        lv_obj_set_style_border_width(tl, 2, 0);
+        create_vuMeter(tl);
+     #else
+        //ROUND BORDER
+        lv_obj_set_style_radius(tl, 25, 0);
+        lv_obj_set_style_border_width(tl, 2, 0);
+        em11 = em11_create(tl);
+        em11_set_minMax(em11, 0, 32768);
+        em11_set_rotation(em11, 30);
+        em11_set_value(em11, 0);
+        em11_set_minMax(em11,0,127);
+     #endif
+
 
     //TOP - RIGHT
     tr = createPart(cont,  false);
@@ -323,10 +344,23 @@ class RetroGUI: public GuiClass {
         uint8_t _left = value & 0xff;//map_l(value >> 8, 0, 127, 0, 11);
         uint8_t _right = (value >> 8) & 0xff;//map_l(value & 0x00FF, 0, 127, 0, 11);
         uint8_t _mean = (_left + _right) / 2;
+        
+        #ifdef USE_VU_METER
+        //NEEDLE
+            // 2700   //SENKRECHT MITTE
+            // 2300  // LINKS
+            // 3100  // RECHTS
+            //0 = 2200, 127 = 3200 , DELTA = 100 , STEP = 1000/127 = 6
+            //ANGLE = 2300 + 6 * value
+            lv_image_set_rotation(needle, 2200 + 7 * _left);  // VOLLER AUSSCHALAG
+            // lv_image_set_rotation(needle, 2300 + 6 * _left);  // REDUZIERTER AUSSCHLAG
 
-        if(em11) {
-          em11_set_value(em11, _left);
-        }
+        #else
+            if(em11) {
+            em11_set_value(em11, _left);
+            }
+        #endif
+
     };
 
      void updateDRDindicator(bool drdStopped){
@@ -350,9 +384,6 @@ class RetroGUI: public GuiClass {
     uint8_t _volumePercent; //FOR BAR
     uint8_t _volume;
     uint32_t _lastStationMid = 0;
-
-
-
 
     uint32_t _pointer_width = 8;
     uint32_t _border_width = 2;
@@ -381,6 +412,9 @@ class RetroGUI: public GuiClass {
 
     //VU-METER
     lv_obj_t * em11;
+
+    lv_obj_t * vuMeter;
+    lv_obj_t * needle;
 
     //STYLES
     lv_style_t cont_style;
@@ -576,13 +610,18 @@ class RetroGUI: public GuiClass {
         lv_style_set_bg_color(&vuMeter_style, lv_color_hex(0x00));
         lv_style_set_bg_opa(&scale_style, LV_OPA_TRANSP);
 
-        lv_style_set_arc_color(&vuMeter_style, lv_color_hex(0x00AD52));
-        lv_style_set_arc_opa(&vuMeter_style, LV_OPA_COVER);
-        
-        lv_style_set_line_rounded(&vuMeter_style, false);
-        lv_style_set_arc_rounded(&vuMeter_style,false);
-        lv_style_set_arc_width(&vuMeter_style, 15);
-
+        #ifdef USE_VU_METER
+            //RECTANGLE
+            lv_style_set_border_color(&vuMeter_style,lv_color_hex(0x00AD52));
+            lv_style_set_radius(&vuMeter_style, 0);
+        #else
+        //CIRCLE AROUND
+            lv_style_set_arc_color(&vuMeter_style, lv_color_hex(0x00AD52));
+            lv_style_set_arc_opa(&vuMeter_style, LV_OPA_COVER);
+            lv_style_set_line_rounded(&vuMeter_style, false);
+            lv_style_set_arc_rounded(&vuMeter_style,false);
+            lv_style_set_arc_width(&vuMeter_style, 15);
+        #endif
     }
 
     lv_obj_t * createPart(lv_obj_t * parent, bool border) {
@@ -872,6 +911,25 @@ class RetroGUI: public GuiClass {
         _volume_width = lv_obj_get_width(container);
 
         return container;
+
+    }
+
+    void create_vuMeter(lv_obj_t * parent) {
+
+        vuMeter = lv_image_create(parent);
+        lv_image_set_src(vuMeter, &VU_METER_AMBER_SMALL);
+        lv_obj_center(vuMeter);
+
+        needle = lv_image_create(vuMeter);
+        uint32_t w2 = lv_obj_get_width(vuMeter) / 2;
+        lv_image_set_src(needle, &NEEDLE_RED);
+        lv_obj_align(needle, LV_ALIGN_BOTTOM_LEFT, LV_PCT(50), 0);
+        lv_image_set_pivot(needle, 0, 1);
+
+        // lv_image_set_rotation(needle2, 2700);  //SENKRECHT MITTE
+        lv_image_set_rotation(needle, 2300);  // LINKS
+        //lv_image_set_rotation(needle2, 3100);  // RECHTS
+
 
     }
 
