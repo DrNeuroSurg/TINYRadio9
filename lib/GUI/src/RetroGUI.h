@@ -67,6 +67,8 @@ class RetroGUI: public GuiClass {
 
     static lv_point_precise_t top_line_points[] = { {0,0}, {TFT_HOR_RES, 0}};
     static lv_point_precise_t bottom_line_points[] = { {0,TFT_VER_RES -1}, {TFT_HOR_RES, TFT_VER_RES - 1}};
+    static lv_point_precise_t separatorLine_points[] = { {col_dsc[0] + 5, 27}, {TFT_HOR_RES, 27}};
+
 
     //****************************************************************************************
     //                                   CREATE PARTS OF GUI                                 *
@@ -88,7 +90,15 @@ class RetroGUI: public GuiClass {
     lv_obj_set_style_line_color(topLine, lv_color_hex(_colorStation), 0);
     lv_obj_set_style_line_opa(topLine, LV_OPA_COVER, 0);
 
-
+    // #ifndef NO_BUTTONS
+    // //SPARATOR_LINE TOP
+    // lv_obj_t * separatorLine = lv_line_create(_parent);
+    // lv_line_set_points(separatorLine, separatorLine_points, 2);
+    // lv_obj_set_style_line_width(separatorLine, BORDER_WIDTH, 0);
+    // lv_obj_set_style_line_color(separatorLine, lv_color_hex(_colorStation), 0);
+    // lv_obj_set_style_line_opa(separatorLine, LV_OPA_COVER, 0);
+    // #endif
+    
     //TOP LEFT
     tl = createPart(cont,  true);
     lv_obj_set_grid_cell(tl, LV_GRID_ALIGN_STRETCH, 0, 1,
@@ -699,7 +709,7 @@ class RetroGUI: public GuiClass {
         if(top) {
             lv_obj_align(ret, LV_ALIGN_BOTTOM_MID, 0, 0);
         } else {
-            lv_obj_align(ret, LV_ALIGN_BOTTOM_MID, 0, lh);
+            lv_obj_align(ret, LV_ALIGN_BOTTOM_MID, 0, lh + 3);
         }
 
         lv_obj_set_style_text_align(ret , LV_TEXT_ALIGN_CENTER, 0);

@@ -248,12 +248,12 @@ void init_display() {
             uint32_t w = lv_area_get_width(area);
             uint32_t h = lv_area_get_height(area);
             lv_draw_sw_rgb565_swap(data, w*h);
-            tft.pushImageDMA(area->x1, area->y1, w, h, (uint16_t*)data);
+            tft.pushImageDMA(area->x1, area->y1, w, h, (uint16_t*)data);  //DMA 
             lv_display_flush_ready(display);
         });
 
 
-
+    //double buffering
     lv_display_set_buffers(display, lvBuffer, lvBuffer2, lvBufferSize, LV_DISPLAY_RENDER_MODE_PARTIAL);
 
     //create & register touchpad
