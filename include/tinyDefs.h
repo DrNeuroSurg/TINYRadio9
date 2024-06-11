@@ -100,6 +100,7 @@
 
   #define X_INC  20
   #define Y_INC  27
+  #define Y_INC_RAMS  20  //27
 
   #define LABEL_WIDTH 6 * X_INC
   #define MARKER_HEIGHT 6
