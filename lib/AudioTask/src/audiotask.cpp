@@ -257,7 +257,6 @@ uint32_t audioGetCodec(){
     audioMessage RX = transmitReceive(audioTxMessage);
     return RX.ret;
 }
-
 boolean audioConnecttohost(const char* host, const char* user, const char* pwd){
     audioTxMessage.cmd = CONNECTTOHOST;
     audioTxMessage.txt1 = host;
